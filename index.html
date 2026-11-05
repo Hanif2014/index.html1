@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Kuis IPA 25 soal pilihan ganda bertema dunia laut">
+<title>Kuis IPA - Dunia Laut</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #00366b 0%, #0077be 50%, #48cae4 100%);
+    color: #012a4a;
+    overflow-x: hidden;
+    padding: 20px;
+  }
+
+  /* ===== Dekorasi laut ===== */
+  .bubble {
+    position: fixed;
+    bottom: -60px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    animation: rise linear infinite;
+    z-index: 0;
+    pointer-events: none;
+  }
+  @keyframes rise {
+    to { transform: translateY(-110vh); opacity: 0; }
+  }
+
+  .wave {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    z-index: 0;
+    pointer-events: none;
+    background-repeat: repeat-x;
+    background-size: 1440px 120px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'><path fill='%23ffffff' fill-opacity='0.35' d='M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,53.3C672,53,768,75,864,80C960,85,1056,75,1152,64C1248,53,1344,43,1392,37.3L1440,32L1440,120L0,120Z'/></svg>");
+    animation: wave 10s linear infinite;
+  }
+  .wave.wave2 {
+    bottom: 10px;
+    opacity: 0.6;
+    animation-duration: 16s;
+    animation-direction: reverse;
+  }
+  @keyframes wave {
+    to { background-position: 1440px 0; }
+  }
+
+  /* ===== Layout ===== */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 30px auto 80px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+  }
+  .header {
+    background: linear-gradient(90deg, #0077be, #00b4d8);
+    color: #fff;
+    padding: 24px;
+    text-align: center;
+  }
+  .header h1 { font-size: 26px; }
+  .header p { opacity: 0.9; margin-top: 6px; }
+  .body { padding: 28px; }
+  .hidden { display: none !important; }
+
+  /* ===== Form nama ===== */
+  .start-icon { font-size: 60px; text-align: center; margin-bottom: 10px; }
+  label { font-weight: 600; display: block; margin-top: 10px; }
+  input[type="text"] {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid #90e0ef;
+    border-radius: 12px;
+    font-size: 16px;
+    margin-top: 10px;
+    outline: none;
+  }
+  input[type="text"]:focus { border-color: #0077be; }
+
+  /* ===== Video pembelajaran ===== */
+  .video-section { margin-top: 26px; }
+  .video-title {
+    font-size: 18px;
+    color: #0077be;
+    font-weight: 600;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #caf0f8;
+    padding-bottom: 6px;
+  }
+  .video-wrap {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* rasio 16:9 */
+    height: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #000;
+  }
+  .video-wrap iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  /* ===== Tombol ===== */
+  .btn {
+    background: #0077be;
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-weight: 600;
+  }
+  .btn:hover { background: #005f99; transform: translateY(-2px); }
+  .btn-outline { background: #fff; color: #0077be; border: 2px solid #0077be; }
+  .btn-outline:hover { background: #e0f4ff; }
+  .btn-full { width: 100%; margin-top: 16px; }
+  .btn-success { background: #2a9d8f; }
+  .btn-success:hover { background: #21867a; }
+  .btn:disabled { background: #a0c4d8; cursor: not-allowed; transform: none; }
+
+  /* ===== Info kuis ===== */
+  .info-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-weight: 600;
+    color: #0077be;
+  }
+  .progress {
+    height: 10px;
+    background: #caf0f8;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #00b4d8, #0077be);
+    transition: width 0.3s;
+  }
+
+  /* ===== Soal ===== */
+  .question-number {
+    display: inline-block;
+    background: #0077be;
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    margin: 20px 0 10px;
+  }
+  .question-text {
+    font-size: 19px;
+    line-height: 1.5;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    padding: 14px 18px;
+    margin: 10px 0;
+    border: 2px solid #90e0ef;
+    border-radius: 12px;
+    background: #f0faff;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.2s;
+  }
+  .option:hover { background: #d9f4ff; }
+  .option .letter {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #caf0f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  .option.selected {
+    background: #0077be;
+    color: #fff;
+    border-color: #0077be;
+  }
+  .option.selected .letter { background: #fff; color: #0077be; }
+
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  /* ===== Navigasi nomor ===== */
+  .nav-title { margin-top: 26px; font-weight: 600; color: #0077be; }
+  .nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .nav-grid button {
+    padding: 8px 0;
+    border: none;
+    border-radius: 8px;
+    background: #caf0f8;
+    cursor: pointer;
+    font-weight: bold;
+    color: #012a4a;
+  }
+  .nav-grid button.answered { background: #48cae4; color: #fff; }
+  .nav-grid button.current { outline: 3px solid #023e8a; outline-offset: 1px; }
+
+  /* ===== Hasil ===== */
+  .result-top { text-align: center; }
+  .score-circle {
+    width: 170px;
+    height: 170px;
+    margin: 10px auto;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00b4d8, #0077be);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(0, 119, 190, 0.4);
+  }
+  .score-circle .num { font-size: 56px; font-weight: bold; line-height: 1; }
+  .score-circle .lbl { font-size: 14px; opacity: 0.9; }
+  .result-name { font-size: 20px; font-weight: 600; margin-top: 8px; }
+  .result-msg { margin-top: 6px; color: #555; }
+
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin: 22px 0;
+    flex-wrap: wrap;
+  }
+  .stat {
+    padding: 14px 20px;
+    border-radius: 14px;
+    min-width: 120px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .stat .big { font-size: 26px; }
+  .stat.benar { background: #d8f3dc; color: #1b4332; }
+  .stat.salah { background: #ffe5e5; color: #9d0208; }
+  .stat.kosong { background: #e0e7ff; color: #3a0ca3; }
+
+  .review-title {
+    font-size: 20px;
+    color: #0077be;
+    margin: 26px 0 6px;
+    border-bottom: 2px solid #caf0f8;
+    padding-bottom: 8px;
+  }
+  .review-item {
+    border-left: 6px solid;
+    padding: 16px 18px;
+    border-radius: 12px;
+    margin: 14px 0;
+  }
+  .review-item.benar { border-color: #2a9d8f; background: #e9f9f5; }
+  .review-item.salah { border-color: #e63946; background: #fdecee; }
+  .review-item .qhead { font-weight: 600; font-size: 16px; line-height: 1.5; }
+  .badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .badge.benar { background: #2a9d8f; }
+  .badge.salah { background: #e63946; }
+  .badge.kosong { background: #6c757d; }
+  .ans-line { margin-top: 6px; font-size: 15px; }
+  .ans-line span { font-weight: 600; }
+  .ans-line .wrong { color: #c1121f; }
+  .ans-line .correct { color: #2a9d8f; }
+
+  .result-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+
+  @media (max-width: 600px) {
+    .body { padding: 18px; }
+    .question-text { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Dekorasi laut -->
+<div class="wave"></div>
+<div class="wave wave2"></div>
+
+<div class="container">
+
+  <!-- ===== SCREEN 1: Input Nama ===== -->
+  <div id="screenStart" class="card">
+    <div class="header">
+      <h1>🌊 Kuis IPA Dunia Laut 🐠</h1>
+      <p>25 soal pilihan ganda untuk menguji pengetahuanmu</p>
+    </div>
+    <div class="body">
+      <div class="start-icon">🐬</div>
+      <label for="namaInput">Masukkan Nama Kamu:</label>
+      <input type="text" id="namaInput" placeholder="Contoh: Budi Santoso" maxlength="40"
+             onkeydown="if(event.key==='Enter') startQuiz()">
+      <button class="btn btn-full" onclick="startQuiz()">🚀 Mulai Kuis</button>
+
+      <!-- Video pembelajaran -->
+      <div class="video-section">
+        <div class="video-title">🎬 Video Pembelajaran</div>
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/XiVCpXYwnKM"
+                  title="Video Pembelajaran IPA"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 2: Kuis ===== -->
+  <div id="screenQuiz" class="card hidden">
+    <div class="header">
+      <h1>📝 Kuis IPA</h1>
+      <p id="greeting"></p>
+    </div>
+    <div class="body">
+      <div class="info-bar">
+        <span id="progressText">Soal 1 dari 25</span>
+        <span id="answeredText">Terjawab: 0/25</span>
+      </div>
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+
+      <div>
+        <span class="question-number" id="qNumber">Soal 1</span>
+        <div class="question-text" id="qText"></div>
+        <div id="options"></div>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()">⬅ Sebelumnya</button>
+        <button class="btn" id="nextBtn" onclick="nextQuestion()">Selanjutnya ➡</button>
+      </div>
+
+      <div class="nav-title">Navigasi Soal:</div>
+      <div class="nav-grid" id="navGrid"></div>
+
+      <button class="btn btn-success btn-full" onclick="submitQuiz()">✅ Kumpulkan Jawaban</button>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 3: Hasil ===== -->
+  <div id="screenResult" class="card hidden">
+    <div class="header">
+      <h1>🏆 Hasil Kuis</h1>
+      <p>Lihat nilai dan pembahasan jawabanmu</p>
+    </div>
+    <div class="body">
+      <div class="result-top">
+        <div class="score-circle">
+          <div class="num" id="scoreNum">0</div>
+          <div class="lbl">dari 100</div>
+        </div>
+        <div class="result-name" id="resultName"></div>
+        <div class="result-msg" id="resultMsg"></div>
+      </div>
+
+      <div class="stats">
+        <div class="stat benar"><div class="big" id="countBenar">0</div>Benar</div>
+        <div class="stat salah"><div class="big" id="countSalah">0</div>Salah</div>
+        <div class="stat kosong"><div class="big" id="countKosong">0</div>Tidak Dijawab</div>
+      </div>
+
+      <div class="review-title">📋 Pembahasan Jawaban</div>
+      <div id="reviewList"></div>
+
+      <div class="result-actions">
+        <button class="btn" onclick="restartQuiz()">🔁 Ulangi Kuis</button>
+        <button class="btn btn-outline" onclick="goHome()">🏠 Kembali ke Awal</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ===================== DATA SOAL (25 soal) =====================
+  const questions = [
+    { q: "Organ utama untuk pernapasan pada manusia adalah...",
+      options: ["Jantung", "Paru-paru", "Hati", "Ginjal"], answer: 1 },
+    { q: "Proses pembuatan makanan sendiri oleh tumbuhan dengan bantuan cahaya matahari disebut...",
+      options: ["Respirasi", "Fotosintesis", "Transpirasi", "Fermentasi"], answer: 1 },
+    { q: "Satuan SI untuk gaya adalah...",
+      options: ["Joule", "Watt", "Newton", "Pascal"], answer: 2 },
+    { q: "Gas yang paling banyak terdapat di udara adalah...",
+      options: ["Oksigen", "Karbon dioksida", "Nitrogen", "Hidrogen"], answer: 2 },
+    { q: "Planet yang paling dekat dengan Matahari adalah...",
+      options: ["Venus", "Merkurius", "Mars", "Bumi"], answer: 1 },
+    { q: "Rumus kimia dari air adalah...",
+      options: ["CO₂", "H₂O", "NaCl", "O₂"], answer: 1 },
+    { q: "Hewan berikut yang bernapas menggunakan insang adalah...",
+      options: ["Paus", "Lumba-lumba", "Ikan mas", "Katak dewasa"], answer: 2 },
+    { q: "Benda yang dapat menghantarkan listrik dengan baik disebut...",
+      options: ["Isolator", "Konduktor", "Magnet", "Resistor"], answer: 1 },
+    { q: "Bagian sel yang berfungsi sebagai pusat kendali kegiatan sel adalah...",
+      options: ["Membran sel", "Sitoplasma", "Nukleus", "Mitokondria"], answer: 2 },
+    { q: "Pada rantai makanan, organisme yang berperan sebagai produsen adalah...",
+      options: ["Harimau", "Rumput", "Ular", "Jamur"], answer: 1 },
+    { q: "Alat untuk mengukur suhu tubuh adalah...",
+      options: ["Barometer", "Termometer", "Higrometer", "Amperemeter"], answer: 1 },
+    { q: "Perubahan wujud zat dari padat menjadi cair disebut...",
+      options: ["Menguap", "Mengembun", "Melebur", "Menyublim"], answer: 2 },
+    { q: "Sumber energi terbesar bagi kehidupan di Bumi adalah...",
+      options: ["Bulan", "Matahari", "Bintang", "Angin"], answer: 1 },
+    { q: "Vitamin yang dapat dibentuk tubuh dengan bantuan sinar matahari adalah...",
+      options: ["Vitamin A", "Vitamin C", "Vitamin D", "Vitamin K"], answer: 2 },
+    { q: "Benda akan diam atau bergerak lurus beraturan jika resultan gaya yang bekerja padanya nol. Pernyataan ini adalah Hukum Newton...",
+      options: ["ke-1", "ke-2", "ke-3", "ke-4"], answer: 0 },
+    { q: "Lapisan bumi yang paling luar disebut...",
+      options: ["Inti bumi", "Mantel", "Kerak bumi", "Magma"], answer: 2 },
+    { q: "Mamalia yang dapat terbang adalah...",
+      options: ["Kelelawar", "Burung", "Ayam", "Penguin"], answer: 0 },
+    { q: "Larutan yang dapat mengubah kertas lakmus biru menjadi merah adalah larutan...",
+      options: ["Basa", "Asam", "Garam", "Netral"], answer: 1 },
+    { q: "Satuan untuk kuat arus listrik adalah...",
+      options: ["Volt", "Ohm", "Ampere", "Watt"], answer: 2 },
+    { q: "Fungsi sel darah merah pada manusia adalah mengangkut...",
+      options: ["Sari makanan", "Oksigen", "Hormon", "Air"], answer: 1 },
+    { q: "Perpindahan kalor melalui zat perantara tanpa disertai perpindahan partikel-partikel zatnya disebut...",
+      options: ["Konveksi", "Radiasi", "Konduksi", "Evaporasi"], answer: 2 },
+    { q: "Hewan berikut yang termasuk reptil laut adalah...",
+      options: ["Penyu", "Hiu", "Kepiting", "Cumi-cumi"], answer: 0 },
+    { q: "Ikan paus termasuk kelompok hewan...",
+      options: ["Pisces (ikan)", "Mamalia", "Reptil", "Amfibi"], answer: 1 },
+    { q: "Terumbu karang dibentuk oleh kumpulan hewan kecil yang disebut...",
+      options: ["Polip karang", "Moluska", "Spons", "Alga"], answer: 0 },
+    { q: "Proses hilangnya air dari daun dalam bentuk uap melalui stomata disebut...",
+      options: ["Fotosintesis", "Transpirasi", "Osmosis", "Difusi"], answer: 1 }
+  ];
+
+  const LETTERS = ["A", "B", "C", "D"];
+  const SCORE_PER_QUESTION = 4; // 25 soal x 4 = 100
+
+  let userName = "";
+  let currentIndex = 0;
+  let userAnswers = [];
+
+  // ===================== DEKORASI GELEMBUNG =====================
+  function createBubbles() {
+    for (let i = 0; i < 15; i++) {
+      const b = document.createElement("div");
+      b.className = "bubble";
+      const size = 10 + Math.random() * 30;
+      b.style.width = size + "px";
+      b.style.height = size + "px";
+      b.style.left = Math.random() * 100 + "vw";
+      b.style.animationDuration = (8 + Math.random() * 10) + "s";
+      b.style.animationDelay = (Math.random() * 10) + "s";
+      document.body.appendChild(b);
+    }
+  }
+
+  // ===================== NAVIGASI LAYAR =====================
+  function showScreen(id) {
+    ["screenStart", "screenQuiz", "screenResult"].forEach(s =>
+      document.getElementById(s).classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+    window.scrollTo(0, 0);
+  }
+
+  // ===================== MULAI KUIS =====================
+  function startQuiz() {
+    const nama = document.getElementById("namaInput").value.trim();
+    if (nama === "") {
+      alert("Silakan isi nama terlebih dahulu!");
+      document.getElementById("namaInput").focus();
+      return;
+    }
+    userName = nama;
+    currentIndex = 0;
+    userAnswers = new Array(questions.length).fill(-1);
+    document.getElementById("greeting").textContent = "Selamat mengerjakan, " + userName + "! 🐚";
+    showScreen("screenQuiz");
+    renderQuestion();
+  }
+
+  // ===================== TAMPILKAN SOAL =====================
+  function renderQuestion() {
+    const total = questions.length;
+    const q = questions[currentIndex];
+
+    document.getElementById("qNumber").textContent = "Soal " + (currentIndex + 1);
+    document.getElementById("qText").textContent = q.q;
+
+    // Opsi jawaban
+    const optContainer = document.getElementById("options");
+    optContainer.innerHTML = "";
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.className = "option" + (userAnswers[currentIndex] === i ? " selected" : "");
+      btn.innerHTML = `<span class="letter">${LETTERS[i]}</span><span></span>`;
+      btn.querySelector("span:last-child").textContent = opt;
+      btn.onclick = () => selectOption(i);
+      optContainer.appendChild(btn);
+    });
+
+    // Progress
+    const answeredCount = userAnswers.filter(a => a !== -1).length;
+    document.getElementById("progressText").textContent = `Soal ${currentIndex + 1} dari ${total}`;
+    document.getElementById("answeredText").textContent = `Terjawab: ${answeredCount}/${total}`;
+    document.getElementById("progressBar").style.width = ((currentIndex + 1) / total * 100) + "%";
+
+    // Tombol navigasi
+    document.getElementById("prevBtn").disabled = currentIndex === 0;
+    const nextBtn = document.getElementById("nextBtn");
+    if (currentIndex === total - 1) {
+      nextBtn.textContent = "Selesai ✔";
+      nextBtn.onclick = () => submitQuiz();
+    } else {
+      nextBtn.textContent = "Selanjutnya ➡";
+      nextBtn.onclick = () => nextQuestion();
+    }
+
+    // Grid nomor soal
+    const grid = document.getElementById("navGrid");
+    grid.innerHTML = "";
+    for (let i = 0; i < total; i++) {
+      const b = document.createElement("button");
+      b.textContent = i + 1;
+      let cls = "";
+      if (userAnswers[i] !== -1) cls += " answered";
+      if (i === currentIndex) cls += " current";
+      b.className = cls.trim();
+      b.onclick = () => { currentIndex = i; renderQuestion(); window.scrollTo(0, 0); };
+      grid.appendChild(b);
+    }
+  }
+
+  function selectOption(optionIndex) {
+    userAnswers[currentIndex] = optionIndex;
+    renderQuestion();
+  }
+
+  function nextQuestion() {
+    if (currentIndex < questions.length - 1) {
+      currentIndex++;
+      renderQuestion();
+      window.scrollTo(0, 0);
+    }
+  }
+
+  function prevQuestion() {
+    if (currentIndex > 0) {
+      currentIndex--;
+      renderQuestion();
+      window.scrollTo(0, 0);
+    }
+  }
+
+  // ===================== KUMPULKAN & HITUNG NILAI =====================
+  function submitQuiz() {
+    const kosong = userAnswers.filter(a => a === -1).length;
+    let pesan = "Yakin ingin mengumpulkan jawaban?";
+    if (kosong > 0) pesan = `Masih ada ${kosong} soal belum dijawab.\nYakin ingin mengumpulkan sekarang?`;
+    if (!confirm(pesan)) return;
+
+    let benar = 0, salah = 0;
+    userAnswers.forEach((ans, i) => {
+      if (ans === -1) return;
+      if (ans === questions[i].answer) benar++;
+      else salah++;
+    });
+    const nilai = benar * SCORE_PER_QUESTION;
+    const tidakDijawab = questions.length - benar - salah;
+
+    // Isi halaman hasil
+    document.getElementById("scoreNum").textContent = nilai;
+    document.getElementById("resultName").textContent = "Nama: " + userName;
+    document.getElementById("countBenar").textContent = benar;
+    document.getElementById("countSalah").textContent = salah;
+    document.getElementById("countKosong").textContent = tidakDijawab;
+
+    let msg;
+    if (nilai === 100) msg = "Luar biasa! Kamu sempurna! 🎉🐳";
+    else if (nilai >= 80) msg = "Hebat! Pemahaman IPA kamu sangat baik. 👏";
+    else if (nilai >= 60) msg = "Bagus! Terus belajar ya. 💪";
+    else msg = "Jangan menyerah, coba pelajari lagi dan ulangi kuisnya. 📚";
+    document.getElementById("resultMsg").textContent = msg;
+
+    renderReview();
+    showScreen("screenResult");
+  }
+
+  // ===================== PEMBAHASAN =====================
+  function renderReview() {
+    const list = document.getElementById("reviewList");
+    list.innerHTML = "";
+
+    questions.forEach((q, i) => {
+      const userAns = userAnswers[i];
+      let status;
+      if (userAns === -1) status = "kosong";
+      else if (userAns === q.answer) status = "benar";
+      else status = "salah";
+
+      const badgeText = status === "benar" ? "✔ Benar"
+                      : status === "salah" ? "✘ Salah"
+                      : "– Tidak Dijawab";
+
+      const jawabanKamu = userAns === -1
+        ? "<em>Tidak dijawab</em>"
+        : `${LETTERS[userAns]}. ${escapeHtml(q.options[userAns])}`;
+
+      const jawabanBenar = `${LETTERS[q.answer]}. ${escapeHtml(q.options[q.answer])}`;
+
+      const div = document.createElement("div");
+      div.className = "review-item " + (status === "benar" ? "benar" : "salah");
+      div.innerHTML = `
+        <span class="badge ${status}">${badgeText}</span>
+        <div class="qhead">${i + 1}. ${escapeHtml(q.q)}</div>
+        <div class="ans-line">Jawaban kamu:
+          <span class="${status === 'benar' ? 'correct' : 'wrong'}">${jawabanKamu}</span></div>
+        <div class="ans-line">Jawaban yang benar:
+          <span class="correct">${jawabanBenar}</span></div>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  function escapeHtml(text) {
+    const d = document.createElement("div");
+    d.textContent = text;
+    return d.innerHTML;
+  }
+
+  // ===================== ULANG / KEMBALI =====================
+  function restartQuiz() {
+    currentIndex = 0;
+    userAnswers = new Array(questions.length).fill(-1);
+    document.getElementById("greeting").textContent = "Selamat mengerjakan, " + userName + "! 🐚";
+    showScreen("screenQuiz");
+    renderQuestion();
+  }
+
+  function goHome() {
+    document.getElementById("namaInput").value = "";
+    userName = "";
+    showScreen("screenStart");
+  }
+
+  // ===================== INIT =====================
+  createBubbles();
+</script>
+</body>
+</html>
